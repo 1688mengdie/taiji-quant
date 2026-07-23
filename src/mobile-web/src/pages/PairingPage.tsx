@@ -5,7 +5,7 @@ import { RelayHttpClient } from '../services/RelayHttpClient';
 import { RemoteSessionManager } from '../services/RemoteSessionManager';
 import { useMobileStore } from '../services/store';
 import { useTheme } from '../theme';
-import logoIcon from '../assets/Logo-ICON.png';
+import logoIcon from '../assets/taiji-icon.png';
 
 interface PairingPageProps {
   onPaired: (client: RelayHttpClient, sessionMgr: RemoteSessionManager) => void;
