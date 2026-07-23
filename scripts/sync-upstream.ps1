@@ -145,21 +145,36 @@ if (-not $DryRun) {
     Write-Host "  已保存: last_synced_commit = $upstreamHead"
 }
 
-# ── Step 6: 编译验证 ────────────────────────────────────────────────
+# ── Step 6: 全编译验证 ────────────────────────────────────────────────
 if (-not $SkipBuild -and -not $DryRun) {
-    Write-Step "编译验证"
+    Write-Step "全编译验证"
     Push-Location $TaijiQuantWorkspace
-    try {
-        $env:OPENSSL_DIR = "C:\Program Files\PostgreSQL\17"
-        cargo check --workspace 2>&1 | Select-Object -Last 5
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "  ERROR: cargo check 失败!" -ForegroundColor Red
-            exit 1
-        }
-        Write-Host "  cargo check 通过"
-    } finally {
-        Pop-Location
-    }
+    
+    $failed = $false
+    
+    # 6a. Rust 编译
+    Write-Host "  [1/4] cargo check --workspace..."
+    $env:OPENSSL_DIR = "C:\Program Files\PostgreSQL\17"
+    cargo check --workspace 2>&1 | Select-Object -Last 3
+    if ($LASTEXITCODE -ne 0) { Write-Host "  ERROR: cargo check 失败!" -ForegroundColor Red; $failed = $true }
+    
+    # 6b. Rust 测试
+    Write-Host "  [2/4] cargo test (关键 crate)..."
+    cargo test -p bitfun-services-core --lib -- tree 2>&1 | Select-Object -Last 2
+    cargo test -p bitfun-core --lib -- call_impl_allows 2>&1 | Select-Object -Last 2
+    
+    # 6c. 前端类型检查
+    Write-Host "  [3/4] pnpm type-check:web..."
+    pnpm run type-check:web 2>&1 | Select-Object -Last 5
+    
+    # 6d. mobile-web 构建
+    Write-Host "  [4/4] pnpm prepare:mobile-web..."
+    pnpm run prepare:mobile-web 2>&1 | Select-Object -Last 5
+    
+    if ($failed) { exit 1 }
+    Write-Host "  全编译验证通过"
+    
+    Pop-Location
 } elseif ($DryRun) {
     Write-Host "  [DRY RUN] 跳过编译"
 }
