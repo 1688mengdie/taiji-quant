@@ -149,7 +149,7 @@ if (-not $ContinueMerge) {
                 git merge --abort 2>$null
             }
         } else {
-            $mergeOutput = git merge "$UpstreamRemote/$UpstreamBranch" --no-commit --no-edit --allow-unrelated-histories 2>&1
+            $mergeOutput = git merge "$UpstreamRemote/$UpstreamBranch" --no-commit --no-edit --allow-unrelated-histories -X ours 2>&1
             if ($LASTEXITCODE -ne 0) {
                 Write-Err "Merge 冲突！"
                 Write-Info ""
