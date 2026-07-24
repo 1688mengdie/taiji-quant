@@ -96,8 +96,8 @@ try {
     Write-Info "upstream/$UpstreamBranch HEAD: $upstreamHead"
     Write-Info "本地 HEAD: $(git rev-parse HEAD)"
 
-    $mergeBase = git merge-base HEAD "$UpstreamRemote/$UpstreamBranch"
-    if ($mergeBase -eq $upstreamHead) {
+    $mergeBase = git merge-base HEAD "$UpstreamRemote/$UpstreamBranch" 2>$null
+    if ($LASTEXITCODE -eq 0 -and $mergeBase -eq $upstreamHead) {
         Write-Info "taiji-quant 已是最新，无需同步"
         exit 0
     }
@@ -115,7 +115,11 @@ if (-not $newCommits -or $newCommits.Count -eq 0) {
     exit 0
 }
 $commitCount = if ($newCommits -is [array]) { $newCommits.Count } else { 1 }
-Write-Info "新增 $commitCount 个 commit（$mergeBase → $upstreamHead）:"
+if ($mergeBase) {
+    Write-Info "新增 $commitCount 个 commit（$mergeBase → $upstreamHead）:"
+} else {
+    Write-Info "首次同步 — 导入 $commitCount 个 commit（无共同祖先）:"
+}
 $newCommits | ForEach-Object { Write-Host "    $_" }
 
 # ══════════════════════════════════════════════════════════════════════
@@ -124,10 +128,12 @@ $newCommits | ForEach-Object { Write-Host "    $_" }
 if (-not $ContinueMerge) {
     Write-Step "Step 4: git merge upstream/$UpstreamBranch --no-commit"
     Push-Location $TaijiQuantWorkspace
+    $savedEAP = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
     try {
         if ($DryRun) {
             Write-Info "[DRY RUN] 冲突预测模式 — 模拟 merge 评估冲突量，不实际修改工作区"
-            $dryRunResult = git merge "$UpstreamRemote/$UpstreamBranch" --no-commit --no-edit 2>&1
+            $dryRunResult = git merge "$UpstreamRemote/$UpstreamBranch" --no-commit --no-edit --allow-unrelated-histories 2>&1
             if ($LASTEXITCODE -ne 0) {
                 $conflictFiles = git diff --name-only --diff-filter=U
                 $conflictCount = ($conflictFiles | Where-Object { $_ -ne "" } | Measure-Object).Count
@@ -143,7 +149,7 @@ if (-not $ContinueMerge) {
                 git merge --abort 2>$null
             }
         } else {
-            $mergeOutput = git merge "$UpstreamRemote/$UpstreamBranch" --no-commit --no-edit 2>&1
+            $mergeOutput = git merge "$UpstreamRemote/$UpstreamBranch" --no-commit --no-edit --allow-unrelated-histories 2>&1
             if ($LASTEXITCODE -ne 0) {
                 Write-Err "Merge 冲突！"
                 Write-Info ""
@@ -162,6 +168,7 @@ if (-not $ContinueMerge) {
             Write-Info "Merge 成功（未提交）"
         }
     } finally {
+        $ErrorActionPreference = $savedEAP
         Pop-Location
     }
 } else {
