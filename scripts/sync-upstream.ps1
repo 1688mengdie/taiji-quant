@@ -91,7 +91,7 @@ try {
 Write-Step "Step 2: Fetch upstream"
 Push-Location $TaijiQuantWorkspace
 try {
-    git fetch $UpstreamRemote $UpstreamBranch 2>&1 | Out-Null
+    cmd /c "git fetch $UpstreamRemote $UpstreamBranch 2>&1" | Out-Null
     $upstreamHead = git rev-parse "$UpstreamRemote/$UpstreamBranch"
     Write-Info "upstream/$UpstreamBranch HEAD: $upstreamHead"
     Write-Info "本地 HEAD: $(git rev-parse HEAD)"
