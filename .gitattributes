@@ -1,0 +1,29 @@
+# taiji 独有 crate — 上游不存在，永不冲突
+src/crates/taiji/** merge=ours
+
+# 元数据文件 — taiji 身份标识，不随上游变
+Cargo.toml merge=ours
+package.json merge=ours
+
+# 品牌资源
+png/taiji-icon* merge=ours
+BitFun-Installer/src/taiji-icon* merge=ours
+
+# 项目文档 — taiji 定制
+README.md merge=ours
+README.zh-CN.md merge=ours
+AGENTS.md merge=ours
+AGENTS-CN.md merge=ours
+CONTRIBUTING.md merge=ours
+CONTRIBUTING_CN.md merge=ours
+PR-BODY.md merge=ours
+
+# lock 文件 — 合并后需重新生成
+Cargo.lock merge=ours
+pnpm-lock.yaml merge=ours
+
+# 同步脚本本身
+scripts/sync-upstream.ps1 merge=ours
+
+# 其余所有文件走标准 text merge
+# （共享 crate：adapters/assembly/contracts/execution/interfaces/services）

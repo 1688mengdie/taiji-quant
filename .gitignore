@@ -111,3 +111,6 @@ external/
 /reports/ai-llm-api-reference.md
 /reports/daily_report_*.md
 /reports/taiji-cli-duplication-audit.md
+
+# Windows reserved device names (NUL, CON, PRN, etc.)
+NUL.png
