@@ -346,10 +346,10 @@ if (-not $DryRun) {
         $dateStr = Get-Date -Format 'yyyy-MM-dd'
         $commitMsg = "sync: upstream $dateStr — $commitCount commits from GCWing/BitFun main"
         git add -A
-        git commit -m $commitMsg 2>&1 | Out-Null
+        cmd /c "git commit -m $commitMsg 2>&1" | Out-Null
         Write-Info "已提交: $commitMsg"
 
-        git push origin master 2>&1 | Out-Null
+        cmd /c "git push origin master 2>&1" | Out-Null
         Write-Info "已推送到 origin/master"
     } finally {
         Pop-Location
