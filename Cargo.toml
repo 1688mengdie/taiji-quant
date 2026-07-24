@@ -32,10 +32,10 @@ members = [
     "src/crates/contracts/runtime-ports",
     "src/crates/taiji/taiji-bar",
     "src/crates/taiji/taiji-cli",
-    # "src/crates/taiji/taiji-dvmi",      # 闂簮锛氭嫄鐐?鍙岀嚎涓夋€?
-    # "src/crates/taiji/taiji-magnet",     # 闂簮锛氱浣撳畾浣?
-    # "src/crates/taiji/taiji-thrust",     # 闂簮锛氫笁鎺ㄦ娴?
-    # "src/crates/taiji/taiji-risk",       # 闂簮锛氶鎺ц鍒?鍙傛暟
+    # "src/crates/taiji/taiji-dvmi",      # 闂傚偆鍘界花顕€鏁嶅顓炵彄闁?闁告瑥鐬奸崵搴㈢▔婢跺鍋?
+    # "src/crates/taiji/taiji-magnet",     # 闂傚偆鍘界花顕€鏁嶅槌栨⒖濞达絾鎸搁悾鐐媴?
+    # "src/crates/taiji/taiji-thrust",     # 闂傚偆鍘界花顕€鏁嶅顐ょ憦闁规亽鍔嶉ˉ鍛?
+    # "src/crates/taiji/taiji-risk",       # 闂傚偆鍘界花顕€鏁嶅棰濇闁硅矇鍡╂綈闁?闁告瑥鍊归弳?
     "src/crates/taiji/taiji-engine",
     "src/crates/taiji/taiji-engine-py",
     "src/crates/taiji/taiji-content",
@@ -62,7 +62,7 @@ exclude = [
 
 resolver = "2"
 
-# Shared package metadata 鈥?single source of truth for version
+# Shared package metadata 闁?single source of truth for version
 [workspace.package]
 version = "0.1.0"
 authors = ["Taiji Quant Team"]

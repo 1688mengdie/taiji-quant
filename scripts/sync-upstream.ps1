@@ -59,14 +59,29 @@ Write-Step "Step 1: 环境检查"
 Push-Location $TaijiQuantWorkspace
 try {
     # 1a. 工作区干净？
-    $dirty = git status --porcelain
-    if ($dirty) {
-        Write-Err "工作区不干净，无法执行同步。请先提交或 stash 变更。"
-        Write-Info "变更文件:"
-        Write-Host $dirty
-        exit 1
+    if ($ContinueMerge) {
+        # ContinueMerge 模式：只检查是否有未解决的冲突文件（U），允许 staged 文件
+        if (-not (Test-Path "$(git rev-parse --git-dir)/MERGE_HEAD")) {
+            Write-Err "-ContinueMerge 模式下未检测到进行中的 merge（MERGE_HEAD 不存在）"
+            exit 1
+        }
+        $unresolved = git diff --name-only --diff-filter=U
+        if ($unresolved) {
+            Write-Err "仍有未解决的冲突文件，请先完成冲突裁决后重试："
+            Write-Host $unresolved
+            exit 1
+        }
+        Write-Info "Merge 进行中，所有冲突已解决 — 继续同步流程"
+    } else {
+        $dirty = git status --porcelain
+        if ($dirty) {
+            Write-Err "工作区不干净，无法执行同步。请先提交或 stash 变更。"
+            Write-Info "变更文件:"
+            Write-Host $dirty
+            exit 1
+        }
+        Write-Info "工作区干净"
     }
-    Write-Info "工作区干净"
 
     # 1b. 在 master 分支？
     $branch = git branch --show-current
@@ -185,12 +200,13 @@ if (-not $DryRun) {
 
     # 优先使用 git checkout --ours 恢复元数据文件（利用 .gitattributes merge=ours）
     # 若 merge 冲突已解决，"--ours" 无效，则用内容替换兜底
-    git checkout --ours Cargo.toml 2>$null
+    # 注：cmd /c 隔离 git stderr，避免 ErrorActionPreference=Stop 终止脚本
+    cmd /c "git checkout --ours Cargo.toml 2>&1" | Out-Null
     if ($LASTEXITCODE -eq 0) {
         Write-Info "Cargo.toml 已从 ours 恢复（merge 驱动）"
     }
 
-    git checkout --ours package.json 2>$null
+    cmd /c "git checkout --ours package.json 2>&1" | Out-Null
     if ($LASTEXITCODE -eq 0) {
         Write-Info "package.json 已从 ours 恢复（merge 驱动）"
     }
@@ -248,8 +264,8 @@ if (-not $DryRun) {
 Write-Step "Step 7: 恢复锁文件（ours）"
 if (-not $DryRun) {
     Push-Location $TaijiQuantWorkspace
-    git checkout --ours pnpm-lock.yaml 2>$null
-    git checkout --ours Cargo.lock 2>$null
+    cmd /c "git checkout --ours pnpm-lock.yaml 2>&1" | Out-Null
+    cmd /c "git checkout --ours Cargo.lock 2>&1" | Out-Null
     Write-Info "pnpm-lock.yaml + Cargo.lock 已保持本地版本"
     Pop-Location
 } else {
